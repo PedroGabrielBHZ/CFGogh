@@ -55,6 +55,19 @@ Generate a Control Flow Graph from a smart contract:
 python src/main.py path/to/contract.sol
 ```
 
+### Graphical User Interface
+Launch the GUI for easier interaction:
+```bash
+python src/main.py --gui
+```
+
+The GUI provides:
+- File browser for selecting Solidity contracts
+- Checkboxes for analysis options (taint analysis, reports, visualization)
+- Real-time console output
+- Integrated image viewer for CFG visualizations
+- Tabbed interface for analysis results and vulnerability reports
+
 ### Advanced Analysis Options
 ```bash
 # Generate CFG with custom output file

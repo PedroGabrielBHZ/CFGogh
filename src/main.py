@@ -1,5 +1,6 @@
 import argparse
 import os
+import sys
 from cfg_generator import CFGGenerator
 from visualizer import Visualizer
 from taint_analyzer import TaintAnalyzer
@@ -9,7 +10,9 @@ def main():
     parser = argparse.ArgumentParser(
         description="Analyze smart contracts for tainted flows."
     )
-    parser.add_argument("contract", type=str, help="Path to the smart contract file")
+    parser.add_argument(
+        "contract", type=str, nargs="?", help="Path to the smart contract file"
+    )
     parser.add_argument(
         "--output",
         type=str,
@@ -27,7 +30,32 @@ def main():
         action="store_true",
         help="Perform taint analysis for vulnerabilities",
     )
+    parser.add_argument(
+        "--gui",
+        action="store_true",
+        help="Launch the graphical user interface",
+    )
     args = parser.parse_args()
+
+    # Launch GUI if requested
+    if args.gui:
+        try:
+            from gui import main as gui_main
+
+            gui_main()
+            return 0
+        except ImportError as e:
+            print(f"Error: Failed to import GUI dependencies: {e}")
+            print("Please install required dependencies: pip install Pillow")
+            return 1
+
+    # Require contract file for CLI mode
+    if not args.contract:
+        print(
+            "Error: Contract file is required for CLI mode. Use --gui for graphical interface."
+        )
+        parser.print_help()
+        return 1
 
     # Check if contract file exists
     if not os.path.exists(args.contract):
