@@ -1,0 +1,79 @@
+digraph CFG {
+  rankdir=TB;
+  node [shape=box, style=filled, fillcolor=lightblue];
+
+  subgraph cluster_ReentrancyVulnerable.deposit() {
+    label="ReentrancyVulnerable.deposit()";
+    style=filled;
+    fillcolor=lightgray;
+
+    0 [label="ENTRY", fillcolor=lightgreen];
+    1 [label="require(bool,string)(msg.value > 0,Must send so...", fillcolor=yellow];
+    2 [label="balances[msg.sender] += msg.value", fillcolor=orange];
+    3 [label="Deposit(msg.sender,msg.value)", fillcolor=orange];
+    0 -> 1;
+    1 -> 2;
+    2 -> 3;
+  }
+
+  subgraph cluster_ReentrancyVulnerable.withdraw(uint256) {
+    label="ReentrancyVulnerable.withdraw(uint256)";
+    style=filled;
+    fillcolor=lightgray;
+
+    4 [label="ENTRY", fillcolor=lightgreen];
+    5 [label="require(bool,string)(balances[msg.sender] >= am...", fillcolor=yellow];
+    6 [label="VARIABLE", fillcolor=lightblue];
+    7 [label="(success,None) = msg.sender.call{value: amount}()", fillcolor=red];
+    8 [label="require(bool,string)(success,Transfer failed)", fillcolor=yellow];
+    9 [label="balances[msg.sender] -= amount", fillcolor=red];
+    10 [label="Withdrawal(msg.sender,amount)", fillcolor=orange];
+    4 -> 5;
+    5 -> 6;
+    6 -> 7;
+    7 -> 8;
+    8 -> 9;
+    9 -> 10;
+  }
+
+  subgraph cluster_ReentrancyVulnerable.withdrawSafe(uint256) {
+    label="ReentrancyVulnerable.withdrawSafe(uint256)";
+    style=filled;
+    fillcolor=lightgray;
+
+    11 [label="ENTRY", fillcolor=lightgreen];
+    12 [label="require(bool,string)(balances[msg.sender] >= am...", fillcolor=yellow];
+    13 [label="balances[msg.sender] -= amount", fillcolor=orange];
+    14 [label="VARIABLE", fillcolor=lightblue];
+    15 [label="(success,None) = msg.sender.call{value: amount}()", fillcolor=orange];
+    16 [label="require(bool,string)(success,Transfer failed)", fillcolor=yellow];
+    17 [label="Withdrawal(msg.sender,amount)", fillcolor=red];
+    11 -> 12;
+    12 -> 13;
+    13 -> 14;
+    14 -> 15;
+    15 -> 16;
+    16 -> 17;
+  }
+
+  subgraph cluster_ReentrancyVulnerable.getBalance() {
+    label="ReentrancyVulnerable.getBalance()";
+    style=filled;
+    fillcolor=lightgray;
+
+    18 [label="ENTRY", fillcolor=lightgreen];
+    19 [label="RETURN", fillcolor=lightcoral];
+    18 -> 19;
+  }
+
+  subgraph cluster_ReentrancyVulnerable.getContractBalance() {
+    label="ReentrancyVulnerable.getContractBalance()";
+    style=filled;
+    fillcolor=lightgray;
+
+    20 [label="ENTRY", fillcolor=lightgreen];
+    21 [label="RETURN", fillcolor=lightcoral];
+    20 -> 21;
+  }
+
+}
