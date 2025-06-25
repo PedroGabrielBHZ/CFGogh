@@ -34,7 +34,7 @@ CFGogh is a powerful command-line interface (CLI) tool that leverages Slither to
    # On Windows:
    .\venv\Scripts\Activate.ps1
    # On Linux/Mac:
-   source venv/bin/activate
+   source venv/Scripts/activate
    ```
 
 3. Install dependencies:
