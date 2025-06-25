@@ -34,20 +34,27 @@ def main():
         print(f"Error: Contract file '{args.contract}' not found.")
         return 1
 
+    # Ensure output directory exists and output file is in the output directory
+    os.makedirs("output", exist_ok=True)
+    if not args.output.startswith("output/"):
+        output_path = os.path.join("output", args.output)
+    else:
+        output_path = args.output
+
     print("=== CFGogh - Smart Contract CFG Analyzer ===")
     print(f"Contract: {args.contract}")
-    print(f"Output: {args.output}")
+    print(f"Output: {output_path}")
     print()
 
     # Generate CFG
     cfg_generator = CFGGenerator()
-    result = cfg_generator.generate_cfg(args.contract, args.output)
+    result = cfg_generator.generate_cfg(args.contract, output_path)
 
     if result is None:
         print("Failed to generate CFG.")
         return 1
 
-    print(f"\nCFG successfully generated and saved to: {args.output}")
+    print(f"\nCFG successfully generated and saved to: {output_path}")
 
     # Initialize visualizer
     visualizer = Visualizer()
@@ -82,7 +89,7 @@ def main():
         # If we have tainted flows, create a highlighted version
         if tainted_flows:
             # Read original DOT content
-            with open(args.output, "r") as f:
+            with open(output_path, "r") as f:
                 dot_content = f.read()
 
             # Get all tainted node IDs
@@ -95,7 +102,7 @@ def main():
             highlighted_dot = visualizer.highlight_tainted_flows(
                 dot_content, all_tainted_nodes
             )
-            highlighted_path = args.output.replace(".dot", "_highlighted.dot")
+            highlighted_path = output_path.replace(".dot", "_highlighted.dot")
             with open(highlighted_path, "w") as f:
                 f.write(highlighted_dot)
 
@@ -107,7 +114,7 @@ def main():
             )
         else:
             # Render normal version
-            rendered_file = visualizer.render_dot_file(args.output, output_format="png")
+            rendered_file = visualizer.render_dot_file(output_path, output_format="png")
 
         if rendered_file:
             print(f"Visualization saved to: {rendered_file}")
