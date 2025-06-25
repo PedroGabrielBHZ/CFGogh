@@ -67,7 +67,9 @@ class CFGGenerator:
 
         for function in functions:
             # Add function header
-            dot_lines.append(f"  subgraph cluster_{function.canonical_name} {{")
+            # Sanitize function name for use as DOT identifier
+            sanitized_name = self._sanitize_identifier(function.canonical_name)
+            dot_lines.append(f"  subgraph cluster_{sanitized_name} {{")
             dot_lines.append(f'    label="{function.canonical_name}";')
             dot_lines.append("    style=filled;")
             dot_lines.append("    fillcolor=lightgray;")
@@ -136,3 +138,17 @@ class CFGGenerator:
             return "orange"
         else:
             return "lightblue"
+
+    def _sanitize_identifier(self, identifier):
+        """
+        Sanitize identifier to be valid for DOT format.
+        Replace dots, parentheses, and other special characters with underscores.
+        """
+        import re
+
+        # Replace any character that's not alphanumeric or underscore with underscore
+        sanitized = re.sub(r"[^a-zA-Z0-9_]", "_", identifier)
+        # Ensure it doesn't start with a number
+        if sanitized and sanitized[0].isdigit():
+            sanitized = "_" + sanitized
+        return sanitized
