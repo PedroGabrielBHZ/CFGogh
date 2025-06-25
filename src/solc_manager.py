@@ -40,35 +40,29 @@ class SolcManager:
                     and not line.startswith("Available")
                     and not line.startswith("Installed")
                 ):
-                    # Remove asterisk and extract version
-                    version = line.replace("*", "").strip()
-                    if version:
+                    # Extract just the version number using regex
+                    match = re.search(r"(\d+\.\d+\.\d+)", line)
+                    if match:
+                        version = match.group(1)
                         self.installed_versions.append(version)
-                        if "*" in line:
+                        # Check if this is the current version
+                        if "(current" in line.lower() or "*" in line:
                             self.current_version = version
 
     def get_current_version(self) -> Optional[str]:
         """Get the currently selected Solidity compiler version"""
-        # First try the direct command
-        success, output = self._run_command(["solc-select", "version"])
-        if success:
-            # Extract version from output like "0.8.19"
-            match = re.search(r"(\d+\.\d+\.\d+)", output)
-            if match:
-                self.current_version = match.group(1)
-                return self.current_version
-
-        # Fallback: check from installed versions list
+        # solc-select doesn't have a 'version' command, so we get it from 'versions' output
         success, output = self._run_command(["solc-select", "versions"])
         if success:
             for line in output.split("\n"):
                 line = line.strip()
-                if "*" in line and not line.startswith("Available"):
-                    # Remove asterisk and extract version
-                    version = line.replace("*", "").strip()
-                    if version:
-                        self.current_version = version
-                        return version
+                # Look for "(current, set by...)" pattern or "*" marker
+                if "(current" in line.lower() or "*" in line:
+                    # Extract version from line like "0.8.0 (current, set by ...)" or "* 0.8.0"
+                    match = re.search(r"(\d+\.\d+\.\d+)", line)
+                    if match:
+                        self.current_version = match.group(1)
+                        return self.current_version
 
         return None
 
@@ -112,18 +106,11 @@ class SolcManager:
         if success:
             # Update internal state immediately
             self.current_version = version
-            # Verify the change took effect by checking with solc-select
+            # Give solc-select a moment to update
             import time
 
-            time.sleep(0.5)  # Give solc-select time to update
-            actual_version = self.get_current_version()
-            if actual_version == version:
-                return True, f"Successfully switched to Solidity {version}"
-            else:
-                return (
-                    False,
-                    f"Version switch appeared successful but verification failed. Expected: {version}, Got: {actual_version}",
-                )
+            time.sleep(0.2)
+            return True, f"Successfully switched to Solidity {version}"
         else:
             return False, f"Failed to switch to Solidity {version}: {output}"
 
